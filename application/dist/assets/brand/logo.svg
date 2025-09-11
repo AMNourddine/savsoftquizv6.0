@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="180" height="36" viewBox="0 0 180 36" role="img" aria-label="GAM SOLUTIONS">
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" role="img" aria-label="Logo">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00a6a6"/>
@@ -8,8 +8,5 @@
   <rect rx="6" width="36" height="36" fill="url(#g)"/>
   <g fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="700">
     <text x="9" y="24" font-size="16">G</text>
-  </g>
-  <g fill="#0c2340" font-family="Arial, Helvetica, sans-serif" font-weight="700">
-    <text x="50" y="25" font-size="18">GAM SOLUTIONS</text>
   </g>
 </svg>
