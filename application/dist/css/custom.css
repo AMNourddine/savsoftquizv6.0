@@ -147,8 +147,7 @@ a:hover{ color: #008b8b; }
 @media (min-width: 992px){
     .sb-topnav .navbar-brand{ max-width:none; overflow:visible; text-overflow:unset; }
 }
-.brand-text{ display:inline; }
+.brand-text{ display:none !important; }
 @media (max-width: 992px){
     .navbar-brand .brand-logo{ height:22px; }
-    .brand-text{ display:none; }
 }
