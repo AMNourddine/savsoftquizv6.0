@@ -104,3 +104,53 @@
 	color:#666666;
 	font-size:11px;
 }
+
+/* GAM SOLUTIONS branding overrides */
+:root{
+    --gam-primary:#0c2340; /* deep navy */
+    --gam-primary-dark:#091a30;
+    --gam-accent:#00a6a6; /* teal accent */
+}
+
+.navbar-dark.bg-dark{ background-color: var(--gam-primary) !important; }
+.sb-sidenav-dark{ background-color: var(--gam-primary) !important; }
+
+.btn-primary{
+    background-color: var(--gam-primary) !important;
+    border-color: var(--gam-primary) !important;
+}
+.btn-primary:hover, .btn-primary:focus{
+    background-color: var(--gam-primary-dark) !important;
+    border-color: var(--gam-primary-dark) !important;
+}
+
+.text-primary{ color: var(--gam-primary) !important; }
+a{ color: var(--gam-accent); }
+a:hover{ color: #008b8b; }
+
+/* Cards and chips tweaks */
+.timechip{ background: var(--gam-primary); }
+
+/* Brand logo in navbar */
+.navbar-brand .brand-logo{ height:28px; width:auto; margin-right:8px; vertical-align:middle; }
+/* Reduce left padding so brand hugs the edge */
+.sb-topnav .navbar-brand{ padding-left: 0 !important; margin-left: 0 !important; }
+/* Safety: hide any stray brand text nodes */
+.sb-topnav .navbar-brand{ font-size: 0; }
+.sb-topnav .navbar-brand .brand-logo{ font-size: initial; }
+/* Constrain brand area so it doesn't overlap nav controls */
+.sb-topnav .navbar-brand{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    max-width:240px; /* constrained on small/medium */
+    white-space:nowrap;
+}
+/* On lg+ screens, allow full brand (no clipping) */
+@media (min-width: 992px){
+    .sb-topnav .navbar-brand{ max-width:none; overflow:visible; text-overflow:unset; }
+}
+.brand-text{ display:none !important; }
+@media (max-width: 992px){
+    .navbar-brand .brand-logo{ height:22px; }
+}
