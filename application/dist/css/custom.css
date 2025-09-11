@@ -133,6 +133,8 @@ a:hover{ color: #008b8b; }
 
 /* Brand logo in navbar */
 .navbar-brand .brand-logo{ height:28px; width:auto; margin-right:8px; vertical-align:middle; }
+/* Reduce left padding so brand hugs the edge */
+.sb-topnav .navbar-brand{ padding-left: .25rem !important; margin-left: 0 !important; }
 /* Constrain brand area so it doesn't overlap nav controls */
 .sb-topnav .navbar-brand{
     display:inline-flex;
