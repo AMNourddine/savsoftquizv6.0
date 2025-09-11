@@ -135,6 +135,9 @@ a:hover{ color: #008b8b; }
 .navbar-brand .brand-logo{ height:28px; width:auto; margin-right:8px; vertical-align:middle; }
 /* Reduce left padding so brand hugs the edge */
 .sb-topnav .navbar-brand{ padding-left: 0 !important; margin-left: 0 !important; }
+/* Safety: hide any stray brand text nodes */
+.sb-topnav .navbar-brand{ font-size: 0; }
+.sb-topnav .navbar-brand .brand-logo{ font-size: initial; }
 /* Constrain brand area so it doesn't overlap nav controls */
 .sb-topnav .navbar-brand{
     display:inline-flex;
