@@ -130,3 +130,6 @@ a:hover{ color: #008b8b; }
 
 /* Cards and chips tweaks */
 .timechip{ background: var(--gam-primary); }
+
+/* Brand logo in navbar */
+.navbar-brand .brand-logo{ height:28px; width:auto; margin-right:8px; vertical-align:middle; }
