@@ -24,7 +24,8 @@ class Login extends BaseController
 		
 		$password=md5($password);
 		$db = \Config\Database::connect();
-		$query = $db->query("select id,username,email,full_name,user_token,account_type_id,group_ids,created_time from sq_user where password='$password' and ( username='$username' || email='$email' ) and trash_status='0' ");
+        // Make username/email comparison case-insensitive
+        $query = $db->query("select id,username,email,full_name,user_token,account_type_id,group_ids,created_time from sq_user where password='$password' and ( LOWER(username)=LOWER('$username') || LOWER(email)=LOWER('$email') ) and trash_status='0' ");
 		$row=$query->getRowArray();
 		if(isset($row['username']) && $row['username']==$username){
 			$uid=$row['id'];

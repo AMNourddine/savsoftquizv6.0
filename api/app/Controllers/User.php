@@ -135,7 +135,8 @@ class User extends BaseController
 		if($validateToken != "success"){ return $validateToken;  }
 		$authAccess=$this->authAccess('userAdd');
 		if($authAccess != "success"){ return $authAccess; } 
-		$query = $db2->query("select id from sq_user where trash_status='0' and ( username='$username' || email='$email' )  ");
+        // Check duplicates case-insensitively for username/email
+        $query = $db2->query("select id from sq_user where trash_status='0' and ( LOWER(username)=LOWER('$username') || LOWER(email)=LOWER('$email') )  ");
 		$result=$query->getResultArray();
 		if(count($query->getResultArray()) >= 1){
 		$json_arr['status']="failed"; 	$json_arr['message']="Account already exist with given username or email id";
@@ -183,7 +184,8 @@ class User extends BaseController
 		if($validateToken != "success"){ return $validateToken;  }
 		$authAccess=$this->authAccess('userEdit');
 		if($authAccess != "success"){ return $authAccess; } 
-		$query = $db2->query("select id from sq_user where trash_status='0' and ( username='$username' || email='$email' ) and id !='$id'  ");
+        // Enforce uniqueness case-insensitively on edit as well
+        $query = $db2->query("select id from sq_user where trash_status='0' and ( LOWER(username)=LOWER('$username') || LOWER(email)=LOWER('$email') ) and id !='$id'  ");
 		$result=$query->getResultArray();
 		if(count($query->getResultArray()) >= 1){
 		$json_arr['status']="failed"; 	$json_arr['message']="Account already exist with given username or email id";
