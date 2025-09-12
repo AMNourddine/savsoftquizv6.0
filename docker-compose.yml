@@ -1,6 +1,6 @@
 services:
   mariadb:
-    image: docker.io/bitnami/mariadb:10.6
+    image: nourddinelearning/mariadb-gam_quiz:10.6
     container_name: mariadb_gam_quiz
     ports:
       - '3306:3306'
