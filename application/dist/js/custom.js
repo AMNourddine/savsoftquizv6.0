@@ -2433,6 +2433,39 @@ function isAdminUser(){
 		}
 }
 
+function bulkImport(){
+  $('#title').html('Bulk Import Questions');
+  $('.spinner-border').show();
+  $.post('bulkImport.html',{},function(data){
+    $('#main_content').html(data);
+    $('.spinner-border').hide();
+  });
+}
+
+function bulkImportSample(){
+  const sample = [
+    'Multiple Choice Single Answer,1,What is 2+2?,,2||3||4||5,3',
+    'Multiple Choice Multiple Answers,1,Select prime numbers,,2||3||4||5,2,4'
+  ].join('\n');
+  $('#bulkCSV').val(sample);
+}
+
+function bulkImportSubmit(){
+  const csv = $('#bulkCSV').val();
+  if(!csv || csv.trim()===''){ flashMessage('Please paste CSV data'); return; }
+  $('.spinner-border').show();
+  const arg = { user_token: localStorage.getItem('user_token'), csv: csv };
+  $.post(api_site_url+"qbank/bulkAdd", arg, function(data){
+    const result = JSON.parse(data.trim());
+    flashMessage(result.message || 'Done');
+    if(result.status==='success'){ sq_question(); }
+  }).fail(function(){
+    flashMessage('Import failed');
+  }).always(function(){
+    $('.spinner-border').hide();
+  });
+}
+
 
 
 

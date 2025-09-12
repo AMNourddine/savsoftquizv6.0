@@ -188,6 +188,78 @@ class Qbank extends BaseController
 					
 	}
 
+    // Bulk import questions from CSV payload
+    // Expected POST fields: user_token, csv
+    // CSV columns (header optional):
+    // question_type,category_id,question,description,options,answers
+    // - options: separated by '||'
+    // - answers: 1-based indexes separated by comma (e.g., 1 or 1,3)
+    public function bulkAdd(){
+        $db1 = \Config\Database::connect('writeDB');
+        $json_arr = array();
+        $user_token = $this->request->getVar('user_token');
+        $csv = $this->request->getVar('csv');
+
+        $validateToken = $this->validateToken();
+        if($validateToken != "success"){ return $validateToken; }
+        $authAccess = $this->authAccess('questionAdd');
+        if($authAccess != "success"){ return $authAccess; }
+
+        if($csv==null || trim($csv)===''){
+            $json_arr['status']="failed"; $json_arr['message']="CSV data required"; return json_encode($json_arr);
+        }
+
+        $lines = preg_split('/\r\n|\r|\n/', trim($csv));
+        $count = 0; $errors = array();
+        foreach($lines as $idx => $line){
+            if(trim($line)==''){ continue; }
+            // naive CSV split (no quotes support)
+            $cols = str_getcsv($line);
+            if(count($cols) < 6){ $errors[] = ($idx+1).": columns<6"; continue; }
+            list($question_type,$category_id,$question,$description,$options,$answers) = $cols;
+
+            $fData = array();
+            $fData['question'] = $question;
+            $fData['description'] = $description;
+            $fData['option'] = array();
+            foreach(explode('||',$options) as $opt){ $fData['option'][] = $opt; }
+            if(trim($answers) !== ''){ $fData['answer'] = $answers; }
+
+            $userdata = array();
+            $userdata['question_type'] = $question_type;
+            $userdata['question'] = $fData['question'];
+            $userdata['description'] = $fData['description'];
+            $userdata['category_ids'] = $category_id;
+
+            if($db1->table('sq_question')->insert($userdata)){
+                $qid = $db1->insertID();
+                if(isset($fData['option'])){
+                    foreach($fData['option'] as $k => $v){
+                        $optdata = array();
+                        $optdata['question_id'] = $qid;
+                        $optdata['question_option'] = $v;
+                        if(isset($fData['answer'])){
+                            $answer = explode(',', $fData['answer']);
+                            $p = $k+1;
+                            if(in_array((string)$p, $answer)){
+                                $optdata['score'] = round((1/(count($answer))),2);
+                            }else{ $optdata['score'] = 0; }
+                        }else{ $optdata['score'] = 1; }
+                        $db1->table('sq_option')->insert($optdata);
+                    }
+                }
+                $count++;
+            }else{
+                $msg=$db1->error();
+                $errors[] = ($idx+1).": ".json_encode($msg);
+            }
+        }
+
+        $json_arr['status'] = ($count>0?"success":"failed");
+        $json_arr['message'] = "Imported $count question(s)" . (count($errors)? ". Errors: ".implode('; ',$errors):'');
+        return json_encode($json_arr);
+    }
+
  	public function edit(){
 		
 		$db1 = \Config\Database::connect('writeDB');
