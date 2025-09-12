@@ -1,0 +1,9 @@
+# Local backups and artifacts
+backups/
+
+# OS/editor noise
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
