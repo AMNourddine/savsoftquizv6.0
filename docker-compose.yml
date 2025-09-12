@@ -20,7 +20,7 @@ services:
       - DB_USERNAME=exam
       - DB_NAME=exam
       - DB_PASSWORD=exam
-      - DOMAINNAME=4.227.238.19
+      - DOMAINNAME=ec2-54-70-46-141.us-west-2.compute.amazonaws.com
     depends_on:
       - mariadb
 

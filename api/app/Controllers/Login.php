@@ -17,7 +17,11 @@ class Login extends BaseController
 		// check required post data
 		$json_arr=array();
 		$username = $this->request->getVar('username');
-		$password = $this->request->getVar('passworde');
+		// Accept both 'password' and legacy 'passworde' field names
+		$password = $this->request->getVar('password');
+		if ($password === null) {
+			$password = $this->request->getVar('passworde');
+		}
 		$email = $this->request->getVar('email');
 		if($password==null){ $json_arr['status']="failed"; 	$json_arr['message']="Password missing"; return json_encode($json_arr); 	}
 		if($username==null && $email==null){ $json_arr['status']="failed"; 	$json_arr['message']="Username or Email missing"; return json_encode($json_arr); 		}

@@ -105,14 +105,22 @@
 	font-size:11px;
 }
 
-/* GAM SOLUTIONS branding overrides */
+/* Branding + design tokens */
 :root{
+    /* brand */
     --gam-primary:#0c2340; /* deep navy */
     --gam-primary-dark:#091a30;
     --gam-accent:#00a6a6; /* teal accent */
+    /* neutrals */
+    --bg:#f7f9fc;
+    --surface:#ffffff;
+    --surface-2:#f2f4f7;
+    --border:#e2e8f0;
+    --text:#0f172a;
+    --text-muted:#64748b;
 }
 
-.navbar-dark.bg-dark{ background-color: var(--gam-primary) !important; }
+.navbar-dark.bg-dark{ background-color: var(--gam-primary) !important; box-shadow: 0 2px 6px rgba(2,6,23,.12); }
 .sb-sidenav-dark{ background-color: var(--gam-primary) !important; }
 
 .btn-primary{
@@ -125,16 +133,23 @@
 }
 
 .text-primary{ color: var(--gam-primary) !important; }
-a{ color: var(--gam-accent); }
-a:hover{ color: #008b8b; }
+/* Base and links */
+body{ background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+a{ color: var(--gam-accent); text-decoration: none; }
+a:hover{ color: #008b8b; text-decoration: underline; }
+
+/* Typography */
+h1, h2, h3, h4, h5{ color: var(--text); margin-top: .25rem; margin-bottom: .75rem; }
+.text-muted{ color: var(--text-muted) !important; }
 
 /* Cards and chips tweaks */
 .timechip{ background: var(--gam-primary); }
 
-/* Brand logo in navbar */
-.navbar-brand .brand-logo{ height:28px; width:auto; margin-right:8px; vertical-align:middle; }
+/* Brand logo size */
+.brand-logo{ height:40px; width:auto; margin-right:16px; vertical-align:middle; }
 /* Reduce left padding so brand hugs the edge */
-.sb-topnav .navbar-brand{ padding-left: 0 !important; margin-left: 0 !important; }
+/* Add some breathing room for the brand */
+.sb-topnav .navbar-brand{ padding-left: .75rem !important; margin-left: .5rem !important; }
 /* Safety: hide any stray brand text nodes */
 .sb-topnav .navbar-brand{ font-size: 0; }
 .sb-topnav .navbar-brand .brand-logo{ font-size: initial; }
@@ -151,6 +166,31 @@ a:hover{ color: #008b8b; }
     .sb-topnav .navbar-brand{ max-width:none; overflow:visible; text-overflow:unset; }
 }
 .brand-text{ display:none !important; }
-@media (max-width: 992px){
-    .navbar-brand .brand-logo{ height:22px; }
-}
+@media (max-width: 992px){ .brand-logo{ height:32px; } }
+
+/* Cards */
+.card{ border: 1px solid var(--border); border-radius: .75rem; box-shadow: 0 1px 2px rgba(2,6,23,.04), 0 3px 6px rgba(2,6,23,.06); }
+.card-header{ background: var(--surface-2); border-bottom: 1px solid var(--border); }
+
+/* Sidebar links */
+.sb-sidenav .nav-link{ color: #cbd5e1; border-radius: .5rem; margin: 2px 8px; padding-left: 12px; }
+.sb-sidenav .nav-link:hover{ color: #ffffff; background: rgba(255,255,255,.08); }
+.sb-sidenav .sb-sidenav-menu .sb-nav-link-icon{ color: #cbd5e1; }
+
+/* Tables */
+table{ border-color: var(--border); }
+thead th{ background: var(--surface-2); color: var(--text); }
+tbody tr:nth-child(odd){ background: #fafbfc; }
+tbody tr:hover{ background:#f1f5f9; }
+td, th{ vertical-align: middle; }
+
+/* Forms */
+.form-control{ border-radius: .5rem; border-color: var(--border); }
+.form-control:focus{ border-color: var(--gam-accent); box-shadow: 0 0 0 .2rem rgba(0,166,166,.2); }
+.form-check-input:checked{ background-color: var(--gam-primary); border-color: var(--gam-primary); }
+
+/* Footer */
+footer{ border-top: 1px solid var(--border); background: var(--surface); }
+
+/* Flash message */
+.flashMessage{ border-radius: 0; background: var(--gam-primary); color: #fff; padding: .5rem 1rem; }

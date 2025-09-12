@@ -13,6 +13,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
     </head>
     <body class="bg-primary">
+        <!-- Brand logo top-left on login -->
+        <a href="index.html" class="position-absolute top-0 start-0 m-3" aria-label="Home">
+            <img src="assets/brand/logo.svg" alt="Logo" class="brand-logo">
+        </a>
         <div id="layoutAuthentication">
             <div id="layoutAuthentication_content">
                 <main>
@@ -24,8 +28,8 @@
                                     <div class="card-body">
                                         <form>
                                             <div class="form-floating mb-3">
-                                                <input class="form-control" id="username" type="email" placeholder="name@example.com" autocomplete=off  />
-                                                <label for="inputEmail">Username or Email address</label>
+                                                <input class="form-control" id="username" type="text" placeholder="Username or Email" autocomplete="username" />
+                                                <label for="username">Username or Email</label>
                                             </div>
                                             <div class="form-floating mb-3">
                                                 <input class="form-control" id="passworde" type="password" placeholder="Password"   autocomplete=off />
