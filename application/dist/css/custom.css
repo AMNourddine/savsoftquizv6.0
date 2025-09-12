@@ -17,9 +17,7 @@
 	border-radius:0px;
 	
 }
-.admin-only{
- 
-}
+/* Admin-only sections are toggled via JS (hideAdminOnly). */
 
 .hidden-content{
 	

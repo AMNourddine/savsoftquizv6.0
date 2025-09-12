@@ -2418,7 +2418,8 @@ function hideAdminOnly(){
 		if(parseInt(user_data.account_type_id) != 1){
 			$('.admin-only').hide();
 		}else if(parseInt(user_data.account_type_id) == 1){
-			// $('.admin-only').show();
+			// Ensure admin-only elements are visible for admins
+			$('.admin-only').show();
 		}
 }
 
