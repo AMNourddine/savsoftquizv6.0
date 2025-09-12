@@ -1,6 +1,7 @@
 services:
   mariadb:
     image: docker.io/bitnami/mariadb:10.6
+    container_name: mariadb_gam_quiz
     ports:
       - '3306:3306'
     environment:
@@ -11,7 +12,8 @@ services:
     volumes:
       - 'db-data:/bitnami/mariadb'
   quiz:
-    image: nourddinelearning/savsoftquiz:latest
+    image: nourddinelearning/savsoftquiz-gam_quiz:latest
+    container_name: quiz_gam_quiz
     ports:
       - '80:80'
     environment:
