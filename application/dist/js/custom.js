@@ -2453,13 +2453,22 @@ $(document).on('click','.removeParent',function(){
 
 
 function downloadURI(uri, name) {
-  var link = document.createElement("a");
-  link.download = name;
-  link.href = uri;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  delete link;
+  try{
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.rel = 'noopener';
+    a.href = uri;
+    if(name){ a.setAttribute('download', name); }
+    document.body.appendChild(a);
+    a.click();
+    // Cleanup without using `delete` (no-op on local variables)
+    setTimeout(function(){
+      try{ document.body.removeChild(a); }catch(_){ /* ignore */ }
+    }, 0);
+  }catch(e){
+    // Fallback for browsers that block programmatic download
+    window.open(uri, '_blank');
+  }
 }
 
 
