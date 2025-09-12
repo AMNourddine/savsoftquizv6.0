@@ -11,8 +11,7 @@ services:
     volumes:
       - 'db-data:/bitnami/mariadb'
   quiz:
-    build:
-      context: .
+    image: nourddinelearning/savsoftquiz:latest
     ports:
       - '80:80'
     environment:
