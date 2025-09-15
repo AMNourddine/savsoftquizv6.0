@@ -1,0 +1,3 @@
+FROM nourddinelearning/mariadb-gam_quiz:latest
+COPY docker/seed/mariadb/ /bitnami/mariadb/
+RUN chown -R 1001:1001 /bitnami/mariadb || true

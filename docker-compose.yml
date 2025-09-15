@@ -1,6 +1,6 @@
 services:
   mariadb:
-    image: nourddinelearning/mariadb-gam_quiz:10.6
+    image: nourddinelearning/mariadb-gam_quiz:v2025.09.15
     container_name: mariadb_gam_quiz
     ports:
       - '3306:3306'
@@ -12,7 +12,7 @@ services:
     volumes:
       - 'db-data:/bitnami/mariadb'
   quiz:
-    image: nourddinelearning/savsoftquiz-gam_quiz:latest
+    image: nourddinelearning/gam_quiz:v2025.09.15
     container_name: quiz_gam_quiz
     ports:
       - '80:80'
@@ -21,7 +21,7 @@ services:
       - DB_USERNAME=exam
       - DB_NAME=exam
       - DB_PASSWORD=exam
-      - DOMAINNAME=ec2-54-70-46-141.us-west-2.compute.amazonaws.com
+      - DOMAINNAME=localhost
     depends_on:
       - mariadb
 
