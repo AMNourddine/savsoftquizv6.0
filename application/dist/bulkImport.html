@@ -1,15 +1,19 @@
 <div class="container-fluid px-4">
   <h1 class="mt-4">Bulk Import Questions</h1>
-  <p class="text-muted">Paste CSV with columns: <code>question_type,category_id,question,description,options,answers</code>. Options separated by <code>||</code>, answers are 1-based indexes comma-separated (e.g., <code>1</code> or <code>1,3</code>).</p>
+  <p class="text-muted">CSV columns: <code>question_type,category_id,question,description,options,answers</code>. Options separated by <code>||</code>, answers are 1-based indexes (e.g., <code>1</code> or <code>1,3</code>). Only multiple choice is supported.</p>
   <div class="card mb-4">
     <div class="card-body">
       <div class="mb-3">
-        <label class="form-label">CSV Data</label>
-        <textarea class="form-control" id="bulkCSV" rows="10" placeholder="Multiple Choice Single Answer,1,What is 2+2?,,2||3||4||5,3"></textarea>
+        <label class="form-label">Select CSV file (UTF‑8 recommandé)</label>
+        <input class="form-control" type="file" id="bulkCSVFile" accept=".csv" onchange="bulkImportLoadFile(this)">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Or paste CSV data</label>
+        <textarea class="form-control" id="bulkCSV" rows="10" placeholder="Multiple Choice Single Answer,1,Combien font 2+2 ?, ,2||3||4||5,3"></textarea>
       </div>
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-primary" onclick="bulkImportSubmit();">Import</button>
-        <button type="button" class="btn btn-secondary" onclick="bulkImportSample();">Insert Sample</button>
+        <button type="button" class="btn btn-secondary" onclick="bulkImportSample();">Insérer un exemple</button>
       </div>
     </div>
   </div>

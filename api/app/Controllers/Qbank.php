@@ -192,6 +192,7 @@ class Qbank extends BaseController
     // Expected POST fields: user_token, csv
     // CSV columns (header optional):
     // question_type,category_id,question,description,options,answers
+    // - question_type: "Multiple Choice Single Answer" or "Multiple Choice Multiple Answers"
     // - options: separated by '||'
     // - answers: 1-based indexes separated by comma (e.g., 1 or 1,3)
     public function bulkAdd(){
@@ -209,14 +210,43 @@ class Qbank extends BaseController
             $json_arr['status']="failed"; $json_arr['message']="CSV data required"; return json_encode($json_arr);
         }
 
+        // Ensure UTF-8 for French characters (é, è, à, …)
+        $enc = mb_detect_encoding($csv, [ 'UTF-8','ISO-8859-1','Windows-1252' ], true);
+        if($enc && $enc !== 'UTF-8'){
+            $csv = iconv($enc, 'UTF-8//IGNORE', $csv);
+        }
+        // Strip UTF-8 BOM if present
+        $csv = preg_replace('/^\xEF\xBB\xBF/', '', $csv);
+
         $lines = preg_split('/\r\n|\r|\n/', trim($csv));
         $count = 0; $errors = array();
         foreach($lines as $idx => $line){
             if(trim($line)==''){ continue; }
-            // naive CSV split (no quotes support)
             $cols = str_getcsv($line);
+
+            // Skip header row if detected
+            if($idx === 0){
+                $lower = array_map(function($v){ return strtolower(trim($v)); }, $cols);
+                if(in_array('question', $lower, true) && in_array('options', $lower, true)){
+                    continue;
+                }
+            }
             if(count($cols) < 6){ $errors[] = ($idx+1).": columns<6"; continue; }
             list($question_type,$category_id,$question,$description,$options,$answers) = $cols;
+
+            // Enforce Multiple Choice only
+            $allowedTypes = [
+                'multiple choice single answer',
+                'multiple choice multiple answers'
+            ];
+            $qtLower = strtolower(trim($question_type));
+            if(!in_array($qtLower, $allowedTypes, true)){
+                // Default to MC single answer if invalid
+                $question_type = 'Multiple Choice Single Answer';
+            }else{
+                // Normalize casing
+                $question_type = ($qtLower === 'multiple choice single answer') ? 'Multiple Choice Single Answer' : 'Multiple Choice Multiple Answers';
+            }
 
             $fData = array();
             $fData['question'] = $question;
