@@ -102,7 +102,7 @@ class Qbank extends BaseController
 	}
 	
 
-	public function remove(){
+    public function remove(){
 		
 		$db1 = \Config\Database::connect('writeDB');
 		$db2 = \Config\Database::connect('readDB');
@@ -122,11 +122,42 @@ class Qbank extends BaseController
 				$query = $db1->query($sql);
 				$json_arr['status']="success"; 	$json_arr['message']="Question removed successfully";
 			 
-		
-			 return json_encode($json_arr);	
-			
-		
-	}
+        
+             return json_encode($json_arr);	
+            
+        
+    }
+
+    // Remove multiple questions by comma-separated IDs
+    public function removeMultiple(){
+        $db1 = \Config\Database::connect('writeDB');
+        $db2 = \Config\Database::connect('readDB');
+        $json_arr = array();
+        $ids = $this->request->getVar('id'); // comma-separated list
+
+        $validateToken=$this->validateToken();
+        if($validateToken != "success"){ return $validateToken; }
+        $authAccess=$this->authAccess('questionRemove');
+        if($authAccess != "success"){ return $authAccess; }
+
+        if($ids==null || trim($ids)===''){
+            $json_arr['status']="failed"; $json_arr['message']="Select one or more questions to remove"; return json_encode($json_arr);
+        }
+        // Sanitize: keep only numeric IDs
+        $idArr = array_filter(array_map('trim', explode(',', $ids)), function($v){ return ctype_digit($v); });
+        if(empty($idArr)){
+            $json_arr['status']="failed"; $json_arr['message']="Invalid question ids"; return json_encode($json_arr);
+        }
+        $idList = implode(',', $idArr);
+
+        // Soft-delete questions and related options
+        $db1->query("UPDATE sq_question SET trash_status='1' WHERE trash_status='0' AND id IN ($idList)");
+        $db1->query("UPDATE sq_option SET trash_status='1' WHERE trash_status='0' AND question_id IN ($idList)");
+
+        $affected = $db1->affectedRows();
+        $json_arr['status']="success"; $json_arr['message']="Removed selected question(s)"; $json_arr['removed']=$affected;
+        return json_encode($json_arr);
+    }
  	
 	
 	public function add(){
@@ -232,7 +263,25 @@ class Qbank extends BaseController
                 }
             }
             if(count($cols) < 6){ $errors[] = ($idx+1).": columns<6"; continue; }
-            list($question_type,$category_id,$question,$description,$options,$answers) = $cols;
+
+            // Robust reassembly: if commas exist inside question/description (unquoted CSV),
+            // recombine by taking last two fields as options, answers; first two as type, category;
+            // remaining join back into question/description (last one as description, rest as question)
+            if(count($cols) > 6){
+                $answers = array_pop($cols);
+                $options = array_pop($cols);
+                $question_type = array_shift($cols);
+                $category_id = array_shift($cols);
+                $description = '';
+                if(count($cols) > 1){
+                    $description = array_pop($cols);
+                }elseif(count($cols) === 1){
+                    $description = '';
+                }
+                $question = trim(implode(',', $cols));
+            }else{
+                list($question_type,$category_id,$question,$description,$options,$answers) = $cols;
+            }
 
             // Enforce Multiple Choice only
             $allowedTypes = [

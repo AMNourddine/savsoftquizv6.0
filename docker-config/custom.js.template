@@ -57,7 +57,10 @@ function removeRows(contr){
 	if(confirm("Do you really want to remove selected entries")){
 
 		const arg={user_token:localStorage.getItem('user_token'),id:ids};
-		$.post(api_site_url+"user/removeMultiple",arg,function(data){
+		// Route to correct endpoint based on context
+		var endpoint="user/removeMultiple";
+		if(contr==='sq_question'){ endpoint = "qbank/removeMultiple"; }
+		$.post(api_site_url+endpoint,arg,function(data){
 			var result=JSON.parse(data.trim());
 			flashMessage(result.message);
 			// call function to reload current page
@@ -133,6 +136,14 @@ function dashboard(){
 		 $('#main_content').html(data);
 		 $('.spinner-border').hide();
 		 dashboardStat();
+		 // If a result id was queued (e.g., after submit/quit), render it immediately
+		 try{
+		   var ridQueued = localStorage.getItem('showResultId');
+		   if(ridQueued){
+		     localStorage.removeItem('showResultId');
+		     viewResult(ridQueued);
+		   }
+		 }catch(e){}
 	});	 
 	
 }
@@ -1895,35 +1906,44 @@ function viewResult(id){
 									 
 										$('#categoryWise').append("<tr><td>"+cval.category_name+"</td><td>"+cval.total_questions+"</td><td>"+cval.attempted_question+"</td><td>"+cval.correct+"</td><td>"+cval.incorrect+"</td><td>"+cval.score+"</td><td>"+cval.time+"</td></tr>");
 									});
-								$(questions.data).each(function(index,value){
+            $(questions.data).each(function(index,value){
+                // Normalize user_response to a Set of string ids for reliable membership checks
+                var selectedSet = new Set([]);
+                try{
+                  if(Array.isArray(value.user_response)){
+                    selectedSet = new Set(value.user_response.map(function(x){ return String(x); }));
+                  }
+                }catch(e){ selectedSet = new Set([]); }
 									let options="";
 									let status_icon="<i class='fa fa-check-circle status_icon_correct fa-2x'></i> ";
 									let yourAnswer="";
 									let correctOption="";
 									let updateScore="";
 										
-									$(value.options).each(function(i,v){
-										let cl="";
-										if(parseFloat(v.score) > 0){
-											cl="result-correct-option";
-											if(correctOption == ""){
-											correctOption=atob(v.question_option);
-											}else{
-											correctOption=correctOption+","+atob(v.question_option);
-											}
-											
-											if(value.user_response.indexOf(v.id) != -1)
-											{  
-											   if(yourAnswer == ""){
-												yourAnswer=atob(v.question_option);
-												}else{
-												yourAnswer=yourAnswer+","+atob(v.question_option);
-												}
-											}
-											
-										}
-										options=options+"<div class='result-option "+cl+"'>"+(i+1)+") "+atob(v.question_option)+"</div>";
-									});
+                $(value.options).each(function(i,v){
+                    let cl="";
+                    var textDecoded = b64ToUtf8(v.question_option || '').trim();
+                    if(textDecoded === ''){ return; }
+                    if(parseFloat(v.score) > 0){
+                        cl="result-correct-option";
+                        if(correctOption == ""){
+                            correctOption=textDecoded;
+                        }else{
+                            correctOption=correctOption+", "+textDecoded;
+                        }
+                    }
+
+                    // Record user's selected choices (regardless of correctness)
+                    if(selectedSet.has(String(v.id)))
+                    {  
+                       if(yourAnswer == ""){
+                           yourAnswer=textDecoded;
+                       }else{
+                           yourAnswer=yourAnswer+", "+textDecoded;
+                       }
+                    }
+                options=options+"<div class='result-option "+cl+"'>"+(i+1)+") "+textDecoded+"</div>";
+                });
 									
 									 if(value.question.question_type=="Short Answer"){
 												try{
@@ -1953,7 +1973,25 @@ function viewResult(id){
 											status_icon="<i class='fa fa-exclamation-triangle status_icon_empty fa-2x'></i> ";
 										}											
 									}
-									let qData="<div class='result-question-container'><div class='result-question'>"+status_icon+" <span class='result-ind_time'>Time spent: Approx. "+ind_time[index]+" Seconds</span><b>Q "+(index+1)+")</b> "+atob(value.question.question)+"</div><div class='result-options'>"+options+"</div><div class='result-correct-answer'><b>Correct Answers:</b> "+correctOption+"</div><div class='result-your-answer'><b>Your Answer:</b> "+yourAnswer+"</div><div class='result-description'><b>Description:</b><br>"+atob(value.question.description)+"</div>"+updateScore+"</div>";
+                    // Fallback: use server-provided user_response_text if list above stayed empty
+                    if(yourAnswer=="" && value.user_response_text){
+                        try{
+                          const parts = value.user_response_text.split(',');
+                          const uniq = [];
+                          const seen = new Set();
+                          for(let i=0;i<parts.length;i++){
+                            const p = parts[i];
+                            if(!seen.has(p)) { seen.add(p); uniq.push(p); }
+                          }
+                          yourAnswer = uniq.map(b64ToUtf8).join(', ');
+                        }catch(e){}
+                    }
+
+                    // Fallback for Correct Answers: if not detected from options, use server-provided correct_text
+                    if((!correctOption || correctOption.trim()==='') && value.correct_text){
+                        try{ correctOption = value.correct_text.split(',').map(b64ToUtf8).join(', '); }catch(e){}
+                    }
+                    let qData="<div class='result-question-container'><div class='result-question'>"+status_icon+" <span class='result-ind_time'>Time spent: Approx. "+ind_time[index]+" Seconds</span><b>Q "+(index+1)+")</b> "+b64ToUtf8(value.question.question)+"</div><div class='result-options'>"+options+"</div><div class='result-correct-answer'><b>Correct Answers:</b> "+correctOption+"</div><div class='result-your-answer'><b>Your Answer:</b> "+yourAnswer+"</div><div class='result-description'><b>Description:</b><br>"+b64ToUtf8(value.question.description)+"</div>"+updateScore+"</div>";
 									
 									$('#questionReport').append(qData);
 									
@@ -2418,7 +2456,8 @@ function hideAdminOnly(){
 		if(parseInt(user_data.account_type_id) != 1){
 			$('.admin-only').hide();
 		}else if(parseInt(user_data.account_type_id) == 1){
-			// $('.admin-only').show();
+			// Ensure admin-only elements are visible for admins
+			$('.admin-only').show();
 		}
 }
 
@@ -2430,6 +2469,68 @@ function isAdminUser(){
 		}else{
 		return false;
 		}
+}
+
+// UTF-8 safe Base64 decode helper for accented text
+function b64ToUtf8(b64){
+  try{
+    const bin = atob(b64);
+    if (window.TextDecoder){
+      const bytes = new Uint8Array(bin.length);
+      for (let i=0;i<bin.length;i++){ bytes[i] = bin.charCodeAt(i); }
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    return decodeURIComponent(escape(bin));
+  }catch(e){
+    try{ return decodeURIComponent(escape(atob(b64))); }catch(_){ return atob(b64); }
+  }
+}
+
+// Bulk import UI and actions (CSV)
+function bulkImport(){
+  $('#title').html('Bulk Import Questions');
+  $('.spinner-border').show();
+  $.post('bulkImport.html',{},function(data){
+    $('#main_content').html(data);
+    $('.spinner-border').hide();
+  });
+}
+
+function bulkImportSample(){
+  const sample = [
+    '"Multiple Choice Single Answer",3,"En télétravail, quelle combinaison est la plus sécurisée ?",,"Wi‑Fi public + mot de passe simple||Réseau domestique sécurisé + VPN de l’entreprise||Partage de connexion + identifiant partagé||Wi‑Fi d’un café + gestionnaire de mots de passe",2',
+    '"Multiple Choice Multiple Answers",1,"Sélectionnez les nombres premiers",,"2||3||4||5",2,4'
+  ].join('\n');
+  $('#bulkCSV').val(sample);
+}
+
+function bulkImportLoadFile(input){
+  const file = input.files && input.files[0];
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    let text = e.target.result || '';
+    // Remove UTF‑8 BOM if present
+    if(text.charCodeAt(0) === 0xFEFF){ text = text.slice(1); }
+    $('#bulkCSV').val(text);
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function bulkImportSubmit(){
+  const csv = $('#bulkCSV').val();
+  if(!csv || csv.trim()===''){ flashMessage('Please paste CSV data'); return; }
+  $('.spinner-border').show();
+  const arg = { user_token: localStorage.getItem('user_token'), csv: csv };
+  $.post(api_site_url+"qbank/bulkAdd", arg, function(data){
+    const result = JSON.parse(data.trim());
+    flashMessage(result.message || 'Done');
+    if(result.status==='success'){ sq_question(); }
+  }).fail(function(){
+    flashMessage('Import failed');
+  }).always(function(){
+    $('.spinner-border').hide();
+  });
 }
 
 

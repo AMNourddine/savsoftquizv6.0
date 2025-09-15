@@ -3,13 +3,27 @@
   <p class="text-muted">CSV columns: <code>question_type,category_id,question,description,options,answers</code>. Options separated by <code>||</code>, answers are 1-based indexes (e.g., <code>1</code> or <code>1,3</code>). Only multiple choice is supported.</p>
   <div class="card mb-4">
     <div class="card-body">
+      <div class="alert alert-info" role="alert" style="font-size: 0.95rem;">
+        <strong>Tips for CSV import:</strong>
+        <ul style="margin-bottom:0;">
+          <li><b>Encoding:</b> Use UTF‑8 (accents like é, è, à and apostrophes ’ are supported).</li>
+          <li><b>Columns:</b> <code>question_type,category_id,question,description,options,answers</code>.</li>
+          <li><b>Commas in text:</b> Wrap fields containing commas in double quotes. Example (French):<br>
+            <code>
+              "Multiple Choice Single Answer",3,"En télétravail, quelle combinaison est la plus sécurisée ?",,"Wi‑Fi public + mot de passe simple||Réseau domestique sécurisé + VPN de l’entreprise||Partage de connexion + identifiant partagé||Wi‑Fi d’un café + gestionnaire de mots de passe",2
+            </code>
+          </li>
+          <li><b>Options:</b> separate choices with <code>||</code>. <b>Answers:</b> 1‑based indexes separated by comma (e.g., <code>2</code> or <code>1,3</code>).</li>
+          <li>Importer attempts to repair unquoted commas, but quoting gives the most reliable results.</li>
+        </ul>
+      </div>
       <div class="mb-3">
         <label class="form-label">Select CSV file (UTF‑8 recommandé)</label>
         <input class="form-control" type="file" id="bulkCSVFile" accept=".csv" onchange="bulkImportLoadFile(this)">
       </div>
       <div class="mb-3">
         <label class="form-label">Or paste CSV data</label>
-        <textarea class="form-control" id="bulkCSV" rows="10" placeholder="Multiple Choice Single Answer,1,Combien font 2+2 ?, ,2||3||4||5,3"></textarea>
+        <textarea class="form-control" id="bulkCSV" rows="10" placeholder='"Multiple Choice Single Answer",3,"En télétravail, quelle combinaison est la plus sécurisée ?",,"Wi‑Fi public + mot de passe simple||Réseau domestique sécurisé + VPN de l’entreprise||Partage de connexion + identifiant partagé||Wi‑Fi d’un café + gestionnaire de mots de passe",2'></textarea>
       </div>
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-primary" onclick="bulkImportSubmit();">Import</button>
