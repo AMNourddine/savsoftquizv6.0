@@ -10,6 +10,21 @@ class Quiz extends BaseController
          
     }
 
+    // Normalize string to UTF-8 to avoid mojibake when base64-encoding
+    private function toUtf8($s){
+        if($s === null){ return ''; }
+        if(function_exists('mb_detect_encoding') && mb_detect_encoding($s, 'UTF-8', true)){
+            return $s;
+        }
+        $encs = ['ISO-8859-1','Windows-1252'];
+        foreach($encs as $enc){
+            $c = @iconv($enc, 'UTF-8//IGNORE', $s);
+            if($c !== false){ return $c; }
+        }
+        if(function_exists('utf8_encode')){ return utf8_encode($s); }
+        return $s;
+    }
+
 	
 	public function remove(){
 		
@@ -470,23 +485,23 @@ class Quiz extends BaseController
 		$result=$query->getResultArray();	
 		$options=$result;
 		$ques_arr=array();
-		foreach($questions as $k => $val){
-			$val['question']=base64_encode($val['question']);
-			$ques_arr[$k]['question']=$val;
-			if(isset($user_response[$val['id']])){
-			$ques_arr[$k]['user_response']=$user_response[$val['id']];				
-			}else{
-			$ques_arr[$k]['user_response']="";
-			}
-			if($val['question_type']=="Multiple Choice Single Answer" || $val['question_type']=="Multiple Choice Multiple Answers"){
-			foreach($options as $ok => $oval){
-				if($oval['question_id']==$val['id']){
-					$oval['question_option']=base64_encode($oval['question_option']);
-					$ques_arr[$k]['options'][]=$oval;	
-				}
-			}
-		 }
-		}
+        foreach($questions as $k => $val){
+            $val['question']=base64_encode($this->toUtf8($val['question']));
+            $ques_arr[$k]['question']=$val;
+            if(isset($user_response[$val['id']])){
+            $ques_arr[$k]['user_response']=$user_response[$val['id']];                
+            }else{
+            $ques_arr[$k]['user_response']="";
+            }
+            if($val['question_type']=="Multiple Choice Single Answer" || $val['question_type']=="Multiple Choice Multiple Answers"){
+            foreach($options as $ok => $oval){
+                if($oval['question_id']==$val['id']){
+                    $oval['question_option']=base64_encode($this->toUtf8($oval['question_option']));
+                    $ques_arr[$k]['options'][]=$oval; 
+                }
+            }
+         }
+        }
 		$json_arr['status']="success"; 	$json_arr['message']=""; $json_arr['data']=$ques_arr; return json_encode($json_arr); 
 					
 		

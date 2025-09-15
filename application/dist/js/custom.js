@@ -2444,10 +2444,23 @@ function bulkImport(){
 
 function bulkImportSample(){
   const sample = [
-    'Multiple Choice Single Answer,1,What is 2+2?,,2||3||4||5,3',
-    'Multiple Choice Multiple Answers,1,Select prime numbers,,2||3||4||5,2,4'
+    'Multiple Choice Single Answer,1,Combien font 2+2 ?,,2||3||4||5,3',
+    'Multiple Choice Multiple Answers,1,Sélectionnez les nombres premiers,,2||3||4||5,2,4'
   ].join('\n');
   $('#bulkCSV').val(sample);
+}
+
+function bulkImportLoadFile(input){
+  const file = input.files && input.files[0];
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    let text = e.target.result || '';
+    // Remove UTF‑8 BOM if present
+    if(text.charCodeAt(0) === 0xFEFF){ text = text.slice(1); }
+    $('#bulkCSV').val(text);
+  };
+  reader.readAsText(file, 'utf-8');
 }
 
 function bulkImportSubmit(){

@@ -3,6 +3,20 @@ var ind_interval;
 var color_codes;
 
 var ind_time=new Array();
+
+function b64ToUtf8(b64){
+    try{
+        const bin = atob(b64);
+        if (window.TextDecoder) {
+            const bytes = new Uint8Array(bin.length);
+            for (let i=0;i<bin.length;i++){ bytes[i] = bin.charCodeAt(i); }
+            return new TextDecoder('utf-8').decode(bytes);
+        }
+        return decodeURIComponent(escape(bin));
+    }catch(e){
+        try{ return decodeURIComponent(escape(atob(b64))); }catch(_){ return atob(b64); }
+    }
+}
 $(document).ready(function(){
 			$('.spinner-border').show();
 			var quid=localStorage.getItem('quid');
@@ -52,23 +66,30 @@ $(document).ready(function(){
 						let questionData=questionContainer;
 						questionData=questionData.replace("QQNO", "Q"+(index+1)+"");
 						questionData=questionData.replace(/QNO/g, index);
-						questionData=questionData.replace("QUESTION",atob(value.question.question));
+                        questionData=questionData.replace("QUESTION",b64ToUtf8(value.question.question));
 						questionData=questionData.replace("QTYP",value.question.question_type);
-						let options="";
+                        let options="";
+                        // Build a Set of selected option ids (strings) for reliable checks
+                        let selectedSet = new Set([]);
+                        try{
+                          if(Array.isArray(value.user_response)){
+                            selectedSet = new Set(value.user_response.map(function(x){ return String(x); }));
+                          }
+                        }catch(e){ selectedSet = new Set([]); }
 						if(value.options){
 							$(value.options).each(function(i,v){
 								 
-								let selected="";
-								if(value.user_response.indexOf(v.id) != -1)
-								{  
-								   selected=" checked ";
-								}
+                                let selected="";
+                                if(selectedSet.has(String(v.id)))
+                                {  
+                                   selected=" checked ";
+                                }
 								console.log(selected);
 								if(value.question.question_type=="Multiple Choice Single Answer"){
-								options=options+"<div class='option'><input type='radio' name='option-"+index+"' class='option-"+index+"' value='"+v.id+"' data-qno='"+index+"' onClick='answeredBtn(this);' "+selected+" > "+atob(v.question_option)+"  </div>";
+                                options=options+"<div class='option'><input type='radio' name='option-"+index+"' class='option-"+index+"' value='"+v.id+"' data-qno='"+index+"' onClick='answeredBtn(this);' "+selected+" > "+b64ToUtf8(v.question_option)+"  </div>";
 								}
 								if(value.question.question_type=="Multiple Choice Multiple Answers"){
-								options=options+"<div class='option'><input type='checkbox' name='option-"+index+"' class='option-"+index+"' value='"+v.id+"'  data-qno='"+index+"'  onClick='answeredBtn(this);' "+selected+"> "+atob(v.question_option)+"  </div>";
+                                options=options+"<div class='option'><input type='checkbox' name='option-"+index+"' class='option-"+index+"' value='"+v.id+"'  data-qno='"+index+"'  onClick='answeredBtn(this);' "+selected+"> "+b64ToUtf8(v.question_option)+"  </div>";
 								}
 							});
 							
@@ -338,24 +359,34 @@ function saveQL(){
 }
 
 function submitQuiz(){
-	const rid=localStorage.getItem('rid');
+    const rid=localStorage.getItem('rid');
+    var quid=localStorage.getItem('quid');
 
-	 		var quid=localStorage.getItem('quid');
-			let arg={user_token:localStorage.getItem('user_token'),quid:quid,rid:rid};
-			$.post(api_site_url+"quiz/submitQuiz/"+rid+"/User",arg,function(data){
-				var result=JSON.parse(data.trim());
-				if(result.status=="success"){
-					flashMessage(result.message);
-					$('#submitWarning').modal('hide');
-					$('#main-area-quiz').hide();
-					setTimeout(function(){
-						window.location="dashboard.html";
-					},5000);
-				}else{
-					flashMessage(result.message);
-					$('#submitWarning').modal('hide');
-				}
-			});		
+    // First, persist the latest answers to avoid race conditions
+    const fData = JSON.stringify($('#quizForm').serializeArray());
+    const color_codes_p = color_codes.join('-');
+    const saveArg = { user_token: localStorage.getItem('user_token'), quid: quid, rid: rid, fData: fData, color_codes_p: color_codes_p };
+
+    $.post(api_site_url+"quiz/saveAnswer", saveArg)
+      .always(function(){
+        // Proceed to submit whether save succeeded or not
+        let arg={user_token:localStorage.getItem('user_token'),quid:quid,rid:rid};
+        $.post(api_site_url+"quiz/submitQuiz/"+rid+"/User",arg,function(data){
+            var result=JSON.parse(data.trim());
+            if(result.status=="success"){
+                flashMessage(result.message);
+                $('#submitWarning').modal('hide');
+                $('#main-area-quiz').hide();
+                try{ localStorage.setItem('showResultId', rid); }catch(e){}
+                setTimeout(function(){
+                    window.location="dashboard.html";
+                },1200);
+            }else{
+                flashMessage(result.message);
+                $('#submitWarning').modal('hide');
+            }
+        });
+      });
 }
 
 var x;
