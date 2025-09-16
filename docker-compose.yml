@@ -1,6 +1,6 @@
 services:
   mariadb:
-    image: nourddinelearning/mariadb-gam_quiz:v2025.09.15
+    image: nourddinelearning/mariadb-gam_quiz:v2025.09.16
     container_name: mariadb_gam_quiz
     ports:
       - '3306:3306'
@@ -12,7 +12,7 @@ services:
     volumes:
       - 'db-data:/bitnami/mariadb'
   quiz:
-    image: nourddinelearning/gam_quiz:v2025.09.15
+    image: nourddinelearning/gam_quiz:v2025.09.16
     container_name: quiz_gam_quiz
     ports:
       - '80:80'
