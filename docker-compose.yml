@@ -21,7 +21,7 @@ services:
       - DB_USERNAME=exam
       - DB_NAME=exam
       - DB_PASSWORD=exam
-      - DOMAINNAME=localhost
+      - DOMAINNAME=nour.eastus.cloudapp.azure.com
     depends_on:
       - mariadb
 
